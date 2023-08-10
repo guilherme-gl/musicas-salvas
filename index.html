@@ -1,0 +1,89 @@
+
+<html lang="PT-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salve Suas Músicas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Adicionar Música ao Firestore</h1>
+    <form id="minhaForma">
+        <label for="titulo">Título da Música:</label>
+        <input type="text" id="titulo" name="titulo" required>
+        <label for="artista">Artista:</label>
+        <input type="text" id="artista" name="artista" required>
+        <button type="submit">Salvar Música</button>
+     
+    </form>
+
+    <h1>Músicas Salvas</h1>
+    <ul id="musicasSalvas">
+        <!-- Aqui as músicas salvas serão exibidas -->
+    </ul>
+
+    <button onclick="recuperarMusicas()">Recuperar Músicas</button>
+
+    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-firestore.js"></script>
+
+    <script>
+        var firebaseConfig = {
+            apiKey: "AIzaSyA5-O3aPDh6Wne0Yyi8cVlBLOe2aGvqno4",
+  authDomain: "musicas-22043.firebaseapp.com",
+  projectId: "musicas-22043",
+        };
+        firebase.initializeApp(firebaseConfig);
+        var db = firebase.firestore();
+
+        function salvarMusica() {
+            var titulo = document.getElementById("titulo").value;
+            var artista = document.getElementById("artista").value;
+
+            db.collection("musicas").add({
+                titulo: titulo,
+                artista: artista
+            })
+            .then(function (docRef) {
+                console.log("Música salva com ID: ", docRef.id);
+                alert("Música salva com sucesso!");
+                document.getElementById("minhaForma").reset();
+                atualizarMusicasSalvas();
+            })
+            .catch(function (error) {
+                console.error("Erro ao salvar música: ", error);
+                alert("Ocorreu um erro ao salvar a música. Por favor, tente novamente.");
+            });
+        }
+
+        function atualizarMusicasSalvas() {
+            var listaMusicas = document.getElementById("musicasSalvas");
+            listaMusicas.innerHTML = "";
+
+            db.collection("musicas").get().then(function (querySnapshot) {
+                querySnapshot.forEach(function (doc) {
+                    var titulo = doc.data().titulo;
+                    var artista = doc.data().artista;
+                    var listItem = document.createElement("li");
+                    listItem.textContent = '"' + titulo + '" por ' + artista;
+                    listaMusicas.appendChild(listItem);
+                });
+            }).catch(function (error) {
+                console.error("Erro ao recuperar músicas: ", error);
+                alert("Ocorreu um erro ao recuperar as músicas. Por favor, tente novamente.");
+            });
+        }
+
+        function recuperarMusicas() {
+            atualizarMusicasSalvas();
+        }
+
+        atualizarMusicasSalvas();
+
+        document.getElementById("minhaForma").addEventListener("submit", function (event) {
+            event.preventDefault();
+            salvarMusica();
+        });
+    </script>
+</body>
+</html>
